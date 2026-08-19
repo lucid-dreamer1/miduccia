@@ -1,0 +1,129 @@
+export default function Footer() {
+  return (
+    <footer id="contatti" className="bg-olive-900 border-t border-olive-800/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">🫒</span>
+              <span className="font-[family-name:var(--font-display)] text-2xl font-bold text-cream-50">
+                da Miduccia
+              </span>
+            </div>
+            <p className="text-cream-200/60 text-sm leading-relaxed">
+              La tradizione campana in tavola dal 1987. Cucina autentica con
+              ingredienti freschi e locali, nel cuore di Caserta.
+            </p>
+          </div>
+
+          {/* Contatti */}
+          <div>
+            <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-cream-50 mb-5">
+              Contatti
+            </h3>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-3 text-cream-200/70">
+                <span className="text-terra-400 mt-0.5">📍</span>
+                <span>
+                  Via Roma, 42
+                  <br />
+                  81100 Caserta (CE)
+                </span>
+              </li>
+              <li>
+                <a
+                  href="tel:+390823456789"
+                  className="flex items-center gap-3 text-cream-200/70 hover:text-terra-400 transition-colors"
+                >
+                  <span className="text-terra-400">📞</span>
+                  +39 0823 456 789
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:info@osteriadamiduccia.it"
+                  className="flex items-center gap-3 text-cream-200/70 hover:text-terra-400 transition-colors"
+                >
+                  <span className="text-terra-400">✉️</span>
+                  info@osteriadamiduccia.it
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Orari */}
+          <div>
+            <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-cream-50 mb-5">
+              Orari
+            </h3>
+            <ul className="space-y-2 text-sm text-cream-200/70">
+              <li className="flex justify-between">
+                <span>Lun – Ven</span>
+                <span className="text-cream-100">12:00 – 15:00</span>
+              </li>
+              <li className="flex justify-between">
+                <span></span>
+                <span className="text-cream-100">19:00 – 23:00</span>
+              </li>
+              <li className="flex justify-between mt-2">
+                <span>Sabato</span>
+                <span className="text-cream-100">12:00 – 23:00</span>
+              </li>
+              <li className="flex justify-between mt-2">
+                <span>Domenica</span>
+                <span className="text-cream-100">12:00 – 16:00</span>
+              </li>
+              <li className="mt-3 text-terra-400/80 text-xs italic">
+                Chiuso il martedì
+              </li>
+            </ul>
+          </div>
+
+          {/* WhatsApp + Map */}
+          <div>
+            <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-cream-50 mb-5">
+              Scrivici
+            </h3>
+            <a
+              href="https://wa.me/390823456789?text=Ciao!%20Vorrei%20prenotare%20un%20tavolo."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-green-600/25 hover:-translate-y-0.5 text-sm"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg>
+              WhatsApp
+            </a>
+            {/* Google Maps placeholder */}
+            <div className="mt-5 rounded-xl overflow-hidden border border-olive-700/50 aspect-[4/3]">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3007.7758103872193!2d14.33436947653126!3d41.07389291538118!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133a544c6d174613%3A0x400583db6b980e2a!2sOsteria%20da%20Miduccia!5e0!3m2!1sit!2sit!4v1787134851976!5m2!1sit!2sit"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Mappa Osteria da Miduccia, Caserta"
+                className="grayscale hover:grayscale-0 transition-all duration-700"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="mt-14 pt-8 border-t border-olive-800/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-cream-200/40 text-xs">
+            © {new Date().getFullYear()} Osteria da Miduccia — Tutti i diritti
+            riservati
+          </p>
+          <p className="text-cream-200/30 text-xs">
+            P.IVA 00000000000 · Caserta (CE)
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

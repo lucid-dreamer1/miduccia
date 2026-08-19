@@ -1,26 +1,165 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ─── Tailwind v4 Theme ─── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Brand Palette */
+  --color-olive-50: #f7f6f0;
+  --color-olive-100: #ece9d8;
+  --color-olive-200: #d9d3b3;
+  --color-olive-300: #c2b886;
+  --color-olive-400: #ae9f62;
+  --color-olive-500: #96844a;
+  --color-olive-600: #7a6a3c;
+  --color-olive-700: #5f5232;
+  --color-olive-800: #4a4029;
+  --color-olive-900: #3a3222;
+
+  --color-terra-50: #fdf5f0;
+  --color-terra-100: #fae6d8;
+  --color-terra-200: #f4c9ae;
+  --color-terra-300: #eba57a;
+  --color-terra-400: #e08549;
+  --color-terra-500: #d46a2a;
+  --color-terra-600: #b85220;
+  --color-terra-700: #993f1d;
+  --color-terra-800: #7c341e;
+  --color-terra-900: #662d1c;
+
+  --color-cream-50: #fefdfb;
+  --color-cream-100: #fdf9f0;
+  --color-cream-200: #faf3e0;
+  --color-cream-300: #f5e8c8;
+  --color-cream-400: #edd8a6;
+  --color-cream-500: #e3c47e;
+
+  --color-wine-50: #fdf2f4;
+  --color-wine-100: #fce7eb;
+  --color-wine-200: #f8d0d9;
+  --color-wine-300: #f2a9b9;
+  --color-wine-400: #e97793;
+  --color-wine-500: #dc4c6e;
+  --color-wine-600: #c82d55;
+  --color-wine-700: #a82145;
+  --color-wine-800: #8d1e3e;
+  --color-wine-900: #6b1a32;
+
+  /* Fonts */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── CSS Variables ─── */
+:root {
+  --background: #fefdfb;
+  --foreground: #3a3222;
+}
+
+/* ─── Base Styles ─── */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+}
+
+/* ─── Animations ─── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Stagger delays for children */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+
+/* ─── Custom Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-cream-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-olive-400);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-olive-500);
+}
+
+/* ─── Selection ─── */
+::selection {
+  background: var(--color-terra-200);
+  color: var(--color-terra-900);
+}
+
+/* ─── Glass Effect Utility ─── */
+.glass {
+  background: rgba(254, 253, 251, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-dark {
+  background: rgba(58, 50, 34, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
