@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://osteriadamiduccia.it"),
   title: "Osteria da Miduccia | Trattoria Tradizionale a Caserta",
   description:
-    "Osteria da Miduccia: la trattoria dove la tradizione campana incontra l'amore per la buona cucina. Piatti tipici casertani, ingredienti freschi e un'atmosfera che sa di casa. Prenota il tuo tavolo a Caserta.",
+    "Trattoria tipica a Caserta dal 1987. Scopri i piatti della cucina campana preparati con ingredienti freschi. Prenota online il tuo tavolo da Miduccia!",
   keywords: [
     "osteria caserta",
     "trattoria caserta",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Osteria da Miduccia | Trattoria Tradizionale a Caserta",
     description:
-      "La tradizione campana in tavola. Piatti tipici, ingredienti freschi e l'atmosfera di casa.",
+      "Trattoria tipica a Caserta dal 1987. Scopri i piatti della cucina campana e prenota online il tuo tavolo.",
     type: "website",
     locale: "it_IT",
   },
