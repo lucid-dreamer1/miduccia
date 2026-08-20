@@ -16,6 +16,11 @@ export const metadata: Metadata = {
     "cucina campana",
     "miduccia",
   ],
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon",
+  },
   openGraph: {
     title: "Osteria da Miduccia | Trattoria Tradizionale a Caserta",
     description:
