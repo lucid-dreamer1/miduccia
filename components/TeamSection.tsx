@@ -19,7 +19,7 @@ export default function TeamSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center max-w-5xl mx-auto">
           {/* Photo */}
           <div className="relative">
-            <div className="aspect-[4/3] rounded-3xl overflow-hidden border border-olive-200/50 shadow-xl shadow-olive-900/5">
+            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-olive-200/50 shadow-xl shadow-olive-900/5">
               <Image
                 src="/team-photo.jpg"
                 alt="Il team dell'Osteria da Miduccia in cucina"
