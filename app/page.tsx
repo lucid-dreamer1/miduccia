@@ -3,8 +3,11 @@ import { mockMenuItems } from "@/lib/mock-data";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import MenuSection from "@/components/MenuSection";
+import FAQSection from "@/components/FAQSection";
+import TeamSection from "@/components/TeamSection";
 import BookingForm from "@/components/BookingForm";
 import Footer from "@/components/Footer";
+import StickyMobileCTA from "@/components/StickyMobileCTA";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +49,11 @@ export default async function HomePage() {
       <Navbar />
       <Hero />
       <MenuSection items={menuItems} />
+      <FAQSection />
+      <TeamSection />
       <BookingForm />
       <Footer />
+      <StickyMobileCTA />
     </main>
   );
 }

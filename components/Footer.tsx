@@ -1,4 +1,24 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { getCookieConsent } from "./CookieBanner";
+
 export default function Footer() {
+  const [mapsConsent, setMapsConsent] = useState(false);
+
+  useEffect(() => {
+    setMapsConsent(getCookieConsent() === "all");
+
+    function onConsentChange(e: Event) {
+      const detail = (e as CustomEvent).detail;
+      setMapsConsent(detail === "all");
+    }
+
+    window.addEventListener("cookie-consent-change", onConsentChange);
+    return () => window.removeEventListener("cookie-consent-change", onConsentChange);
+  }, []);
+
   return (
     <footer id="contatti" className="bg-olive-900 border-t border-olive-800/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
@@ -96,19 +116,52 @@ export default function Footer() {
               </svg>
               WhatsApp
             </a>
-            {/* Google Maps placeholder */}
+            {/* Google Maps — conditional on cookie consent */}
             <div className="mt-5 rounded-xl overflow-hidden border border-olive-700/50 aspect-[4/3]">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3007.7758103872193!2d14.33436947653126!3d41.07389291538118!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133a544c6d174613%3A0x400583db6b980e2a!2sOsteria%20da%20Miduccia!5e0!3m2!1sit!2sit!4v1787134851976!5m2!1sit!2sit"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Mappa Osteria da Miduccia, Caserta"
-                className="grayscale hover:grayscale-0 transition-all duration-700"
-              />
+              {mapsConsent ? (
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3007.7758103872193!2d14.33436947653126!3d41.07389291538118!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133a544c6d174613%3A0x400583db6b980e2a!2sOsteria%20da%20Miduccia!5e0!3m2!1sit!2sit!4v1787134851976!5m2!1sit!2sit"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Mappa Osteria da Miduccia, Caserta"
+                  className="grayscale hover:grayscale-0 transition-all duration-700"
+                />
+              ) : (
+                <a
+                  href="https://maps.google.com/?cid=4612735539875700266"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-full flex flex-col items-center justify-center bg-olive-800/50 text-cream-200/60 hover:text-terra-400 transition-colors group"
+                >
+                  <svg
+                    className="w-10 h-10 mb-3 text-cream-200/30 group-hover:text-terra-400/60 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">Apri su Google Maps</span>
+                  <span className="text-xs mt-1 text-cream-300/40">
+                    Mappa non caricata (cookie non accettati)
+                  </span>
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -119,9 +172,23 @@ export default function Footer() {
             © {new Date().getFullYear()} Osteria da Miduccia — Tutti i diritti
             riservati
           </p>
-          <p className="text-cream-200/30 text-xs">
-            P.IVA 00000000000 · Caserta (CE)
-          </p>
+          <div className="flex items-center gap-4 text-cream-200/40 text-xs">
+            <Link
+              href="/privacy-policy"
+              className="hover:text-terra-400 transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <span>·</span>
+            <Link
+              href="/cookie-policy"
+              className="hover:text-terra-400 transition-colors"
+            >
+              Cookie Policy
+            </Link>
+            <span>·</span>
+            <span>P.IVA 00000000000</span>
+          </div>
         </div>
       </div>
     </footer>

@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { submitBooking } from "@/app/actions/booking";
 import { BookingFormState } from "@/lib/types";
+import Link from "next/link";
 
 const initialState: BookingFormState = {
   success: false,
@@ -183,6 +184,28 @@ export default function BookingForm() {
             />
           </div>
 
+          {/* Privacy checkbox */}
+          <div className="flex items-start gap-3">
+            <input
+              id="booking-privacy"
+              name="privacy"
+              type="checkbox"
+              required
+              className="mt-1 w-4 h-4 rounded border-cream-100/30 bg-white/10 text-terra-500 focus:ring-terra-500/50 focus:ring-2 cursor-pointer"
+            />
+            <label htmlFor="booking-privacy" className="text-cream-200/70 text-sm leading-relaxed cursor-pointer">
+              Ho letto e accetto la{" "}
+              <Link
+                href="/privacy-policy"
+                target="_blank"
+                className="text-terra-400 hover:text-terra-300 underline transition-colors"
+              >
+                Privacy Policy
+              </Link>{" "}
+              *
+            </label>
+          </div>
+
           {/* Submit */}
           <button
             type="submit"
@@ -204,6 +227,20 @@ export default function BookingForm() {
               </>
             )}
           </button>
+
+          {/* Response time promise */}
+          <div className="text-center pt-2">
+            <p className="text-cream-200/60 text-sm flex items-center justify-center gap-2">
+              <span>⏱</span>
+              Ti confermiamo la prenotazione entro <strong className="text-cream-100/80">2 ore</strong>
+            </p>
+            <p className="text-cream-300/40 text-xs mt-1">
+              Se preferisci, chiamaci al{" "}
+              <a href="tel:+390823456789" className="text-terra-400/70 hover:text-terra-400 transition-colors">
+                +39 0823 456 789
+              </a>
+            </p>
+          </div>
         </form>
       </div>
     </section>
