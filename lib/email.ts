@@ -25,10 +25,15 @@ const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
 function getGmailTransport() {
   if (!GMAIL_USER || !GMAIL_PASS) return null;
   return nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
       user: GMAIL_USER,
       pass: GMAIL_PASS.replace(/\s+/g, ""), // strip spaces if copied from Google
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 }
