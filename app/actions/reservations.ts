@@ -32,7 +32,7 @@ export async function updateReservationStatus(
 
     const supabase = await getSupabase();
 
-    const isHandled = status === "completed" || status === "cancelled";
+    const isHandled = status === "completed" || status === "cancelled" || status === "confirmed" || status === "rejected";
 
     let { error } = await supabase
       .from("reservations")

@@ -1,7 +1,7 @@
 "use server";
 
-import { BookingFormState } from "@/lib/types";
-import { sendOwnerBookingNotification } from "@/lib/email";
+import type { DirectBookingFormState } from "@/lib/types";
+import { sendOwnerDirectEmail } from "@/lib/email";
 
 function isSupabaseConfigured() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -9,10 +9,10 @@ function isSupabaseConfigured() {
   return url && key && !url.includes("your-project");
 }
 
-export async function submitBooking(
-  prevState: BookingFormState,
+export async function submitBookingDirect(
+  prevState: DirectBookingFormState,
   formData: FormData
-): Promise<BookingFormState> {
+): Promise<DirectBookingFormState> {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const guests = parseInt(formData.get("guests") as string);
@@ -26,7 +26,7 @@ export async function submitBooking(
     return { success: false, error: "Inserisci un nome valido.", message: null };
   }
   if (!email || !email.includes("@")) {
-    return { success: false, error: "Inserisci un'email valida per ricevere la risposta.", message: null };
+    return { success: false, error: "Inserisci un'email valida per ricevere la conferma.", message: null };
   }
   if (!guests || guests < 1 || guests > 12) {
     return { success: false, error: "Numero di persone non valido (max 12).", message: null };
@@ -41,7 +41,7 @@ export async function submitBooking(
     return { success: false, error: "Inserisci un numero di telefono valido.", message: null };
   }
 
-  // Check if date is not in the past
+  // Check date not in past
   const bookingDate = new Date(date);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -49,7 +49,7 @@ export async function submitBooking(
     return { success: false, error: "Non puoi prenotare per una data passata.", message: null };
   }
 
-  // Generate response token for 1-click email actions
+  // Generate a unique response token
   const responseToken = crypto.randomUUID();
 
   try {
@@ -57,7 +57,6 @@ export async function submitBooking(
       const { createClient } = await import("@/lib/supabase/server");
       const supabase = await createClient();
 
-      // Insert reservation with status 'inbox' and response token
       const { error: insertErr } = await supabase.from("reservations").insert({
         name: name.trim(),
         email: email.trim().toLowerCase(),
@@ -67,27 +66,29 @@ export async function submitBooking(
         phone: phone.trim(),
         notes: notes?.trim() || null,
         handled: false,
-        status: "inbox",
+        status: "direct_pending",
         source: "website",
-        booking_flow: "inbox",
+        booking_flow: "direct",
         table_id: null,
         response_token: responseToken,
       });
 
       if (insertErr) {
-        console.error("Supabase insert error:", insertErr);
+        console.error("Supabase insert error (direct):", insertErr);
         return {
           success: false,
-          error: "Errore nel salvataggio. Riprova o chiamaci direttamente al +39 0823 456 789.",
+          error: "Errore nel salvataggio. Riprova o chiamaci direttamente.",
           message: null,
         };
       }
     } else {
-      console.log("📋 Prenotazione (mock):", { name, email, guests, date, time, phone, notes, responseToken });
+      console.log("📩 Prenotazione Diretta (mock):", {
+        name, email, guests, date, time, phone, notes, responseToken,
+      });
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    // Send unified email notification with 3 action buttons to owner
+    // Send email with confirm/reject buttons to the owner
     const bookingData = {
       name: name.trim(),
       email: email.trim().toLowerCase(),
@@ -97,15 +98,15 @@ export async function submitBooking(
       time,
       notes: notes?.trim() || null,
     };
-    await sendOwnerBookingNotification(bookingData, responseToken);
+    await sendOwnerDirectEmail(bookingData, responseToken);
 
     return {
       success: true,
       error: null,
-      message: `Grazie ${name.trim().split(" ")[0]}! La tua richiesta per ${guests} persone il ${new Date(date).toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })} alle ${time} è stata inviata. Riceverai conferma via email a ${email.trim()} non appena avremo verificato la disponibilità.`,
+      message: `Grazie ${name.trim().split(" ")[0]}! La tua richiesta è stata inviata direttamente al titolare. Riceverai una risposta via email a ${email.trim()} il prima possibile.`,
     };
   } catch (err) {
-    console.error("Booking error:", err);
+    console.error("Booking direct error:", err);
     return {
       success: false,
       error: "Si è verificato un errore. Riprova tra qualche istante.",
@@ -113,4 +114,3 @@ export async function submitBooking(
     };
   }
 }
-

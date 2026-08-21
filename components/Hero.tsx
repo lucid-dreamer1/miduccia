@@ -45,8 +45,8 @@ export default function Hero() {
         </p>
 
         {/* Location */}
-        <p className="animate-fade-in opacity-0 stagger-4 text-cream-300/60 text-xs sm:text-sm uppercase tracking-[0.2em] mb-8 sm:mb-10">
-          📍 Caserta, Campania
+        <p className="animate-fade-in opacity-0 stagger-4 text-cream-300/60 text-xs sm:text-sm uppercase tracking-[0.25em] mb-8 sm:mb-10 font-medium">
+          Caserta, Campania
         </p>
 
         {/* CTA Buttons */}

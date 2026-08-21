@@ -77,8 +77,8 @@ export default function QuickBookingForm({
     <div className="bg-white rounded-3xl border border-olive-100 shadow-sm p-6 sm:p-8 max-w-2xl mx-auto">
       <div className="flex items-center justify-between pb-6 mb-6 border-b border-olive-100">
         <div>
-          <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold text-olive-900 flex items-center gap-2">
-            <span>⚡</span> Inserimento Rapido
+          <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold text-olive-900">
+            Inserimento Rapido
           </h2>
           <p className="text-olive-500 text-xs mt-1">
             Per telefonate e clienti al banco in pochi secondi
@@ -90,41 +90,38 @@ export default function QuickBookingForm({
           <button
             type="button"
             onClick={() => setSource("phone")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               source === "phone"
                 ? "bg-white text-olive-900 shadow-sm"
                 : "text-olive-500 hover:text-olive-800"
             }`}
           >
-            <span>📞</span> Telefono
+            Telefono
           </button>
           <button
             type="button"
             onClick={() => setSource("walk_in")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
               source === "walk_in"
                 ? "bg-white text-olive-900 shadow-sm"
                 : "text-olive-500 hover:text-olive-800"
             }`}
           >
-            <span>🚶</span> Al Banco
+            Al Banco
           </button>
         </div>
       </div>
 
       {/* Feedback Messages */}
       {state.success && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-2xl text-sm flex items-center gap-3">
-          <span className="text-xl">✅</span>
-          <div>
-            <div className="font-semibold">{state.message}</div>
-          </div>
+        <div className="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-2xl text-sm">
+          <div className="font-semibold">{state.message}</div>
         </div>
       )}
 
       {state.error && (
         <div className="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl text-sm">
-          ❌ {state.error}
+          {state.error}
         </div>
       )}
 
@@ -276,7 +273,7 @@ export default function QuickBookingForm({
           disabled={isPending}
           className="w-full bg-terra-500 hover:bg-terra-600 disabled:opacity-50 text-white font-bold py-3 rounded-2xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm"
         >
-          {isPending ? "Salvataggio..." : "⚡ Registra Prenotazione"}
+          {isPending ? "Salvataggio..." : "Registra Prenotazione"}
         </button>
       </form>
     </div>

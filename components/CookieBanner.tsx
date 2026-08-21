@@ -44,7 +44,7 @@ export default function CookieBanner() {
           {/* Text */}
           <div>
             <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-cream-50 mb-2">
-              🍪 Questo sito utilizza i cookie
+              Informativa sui Cookie
             </h3>
             <p className="text-cream-200/70 text-sm leading-relaxed">
               Utilizziamo cookie tecnici necessari al funzionamento del sito e,

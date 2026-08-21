@@ -49,9 +49,13 @@ export default function ReservationStatusSelect({
         onChange={handleChange}
         className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all cursor-pointer appearance-none pr-7 ${config.bgColor} ${config.color} ${config.borderColor} hover:opacity-90 disabled:opacity-50`}
       >
-        <option value="pending">⏳ In attesa</option>
-        <option value="completed">✔️ Completata</option>
-        <option value="cancelled">✕ Annullata</option>
+        <option value="pending">In attesa</option>
+        <option value="inbox">In arrivo</option>
+        <option value="direct_pending">In attesa risposta</option>
+        <option value="confirmed">Confermata</option>
+        <option value="rejected">Rifiutata</option>
+        <option value="completed">Completata</option>
+        <option value="cancelled">Annullata</option>
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-60">
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

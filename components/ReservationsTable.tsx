@@ -30,7 +30,7 @@ export default function ReservationsTable({
   // Filtering
   const filtered = reservations.filter((r) => {
     // Hide completed / cancelled if toggle is ON
-    if (hideCompleted && (r.status === "completed" || r.status === "cancelled")) {
+    if (hideCompleted && (r.status === "completed" || r.status === "cancelled" || r.status === "confirmed" || r.status === "rejected")) {
       return false;
     }
 
@@ -52,13 +52,16 @@ export default function ReservationsTable({
     return true;
   });
 
-  // Sorting: Pending first (at the top), Completed and Cancelled at the bottom
   const sortedReservations = [...filtered].sort((a, b) => {
-    if (a.status === "pending" && b.status !== "pending") return -1;
-    if (a.status !== "pending" && b.status === "pending") return 1;
+    // Active/actionable statuses first
+    const activeStatuses = ["pending", "inbox", "direct_pending"];
+    const aActive = activeStatuses.includes(a.status);
+    const bActive = activeStatuses.includes(b.status);
+    if (aActive && !bActive) return -1;
+    if (!aActive && bActive) return 1;
 
-    if (a.status === "completed" && b.status === "cancelled") return -1;
-    if (a.status === "cancelled" && b.status === "completed") return 1;
+    if (a.status === "confirmed" && (b.status === "completed" || b.status === "cancelled" || b.status === "rejected")) return -1;
+    if ((a.status === "completed" || a.status === "cancelled" || a.status === "rejected") && b.status === "confirmed") return 1;
 
     const dateComp = a.date.localeCompare(b.date);
     if (dateComp !== 0) return dateComp;
@@ -108,13 +111,12 @@ export default function ReservationsTable({
           {/* Toggle: Hide Completed / Cancelled */}
           <button
             onClick={() => setHideCompleted(!hideCompleted)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
               hideCompleted
                 ? "bg-amber-100 text-amber-900 border-amber-300 shadow-sm"
                 : "bg-olive-50 text-olive-600 border-olive-200 hover:bg-olive-100"
             }`}
           >
-            <span>{hideCompleted ? "🙈" : "👁️"}</span>
             {hideCompleted ? "Concluse Nascoste" : "Nascondi Concluse"}
           </button>
 
@@ -126,9 +128,13 @@ export default function ReservationsTable({
               className="bg-olive-50 border border-olive-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-olive-900"
             >
               <option value="all">Tutti gli stati</option>
-              <option value="pending">⏳ In attesa</option>
-              <option value="completed">✔️ Completate</option>
-              <option value="cancelled">✕ Annullate</option>
+              <option value="pending">In attesa</option>
+              <option value="inbox">In arrivo</option>
+              <option value="direct_pending">In attesa risposta</option>
+              <option value="confirmed">Confermate</option>
+              <option value="rejected">Rifiutate</option>
+              <option value="completed">Completate</option>
+              <option value="cancelled">Annullate</option>
             </select>
           </div>
         </div>
@@ -137,13 +143,12 @@ export default function ReservationsTable({
       {/* Main Table Content */}
       {sortedReservations.length === 0 ? (
         <div className="bg-white rounded-2xl border border-olive-100 p-12 text-center">
-          <span className="text-5xl block mb-4">📋</span>
-          <h3 className="font-[family-name:var(--font-display)] text-xl font-semibold text-olive-700 mb-2">
+          <h3 className="font-[family-name:var(--font-display)] text-lg font-semibold text-olive-700 mb-1">
             Nessuna prenotazione trovata
           </h3>
-          <p className="text-olive-400 text-sm">
+          <p className="text-olive-400 text-xs">
             {reservations.length === 0
-              ? "Nessuna prenotazione presente nel registro. Aggiungine una con Inserimento Rapido!"
+              ? "Nessuna prenotazione presente nel registro."
               : "Nessuna prenotazione corrisponde ai filtri selezionati."}
           </p>
         </div>
@@ -168,15 +173,15 @@ export default function ReservationsTable({
                   const source = SOURCE_CONFIG[res.source] || SOURCE_CONFIG.website;
                   const assignedTable =
                     res.table || tables.find((t) => t.id === res.table_id);
-                  const isCompleted = res.status === "completed";
-                  const isCancelled = res.status === "cancelled";
+                  const isCompleted = res.status === "completed" || res.status === "confirmed";
+                  const isCancelled = res.status === "cancelled" || res.status === "rejected";
 
                   return (
                     <tr
                       key={res.id}
                       className={`transition-colors ${
                         isCompleted
-                          ? "bg-green-50/40 text-olive-800"
+                          ? "bg-green-50/30 text-olive-800"
                           : isCancelled
                           ? "bg-gray-50/60 opacity-50"
                           : "hover:bg-cream-50/70"
@@ -184,30 +189,25 @@ export default function ReservationsTable({
                     >
                       {/* Name & Origin */}
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2.5">
-                          <span title={`Origine: ${source.label}`} className="text-base">
-                            {source.icon}
-                          </span>
-                          <div>
-                            <div className="font-bold text-olive-900 flex items-center gap-2">
-                              {res.name}
-                              {isCompleted && (
-                                <span className="text-[10px] bg-green-200 text-green-900 font-bold px-2 py-0.5 rounded-full">
-                                  Servita
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-olive-400">
-                              {source.label}
-                            </span>
+                        <div>
+                          <div className="font-bold text-olive-900 flex items-center gap-2">
+                            {res.name}
+                            {res.status === "completed" && (
+                              <span className="text-[10px] bg-green-200 text-green-900 font-bold px-2 py-0.5 rounded-full">
+                                Servita
+                              </span>
+                            )}
                           </div>
+                          <span className="text-[11px] text-olive-400 font-medium">
+                            {source.label}
+                          </span>
                         </div>
                       </td>
 
                       {/* Guests */}
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 font-bold text-olive-800 bg-olive-50 px-2.5 py-1 rounded-lg border border-olive-200/60">
-                          👥 {res.guests}
+                        <span className="inline-flex items-center font-semibold text-olive-800 bg-olive-50 px-2.5 py-1 rounded-lg border border-olive-200/60 text-xs">
+                          {res.guests} {res.guests === 1 ? "persona" : "persone"}
                         </span>
                       </td>
 
@@ -239,8 +239,8 @@ export default function ReservationsTable({
                       <td className="px-6 py-4">
                         {isCompleted ? (
                           assignedTable ? (
-                            <span className="text-xs font-semibold text-olive-600 bg-olive-100/70 px-2.5 py-1 rounded-lg">
-                              🪑 Tavolo {assignedTable.number}
+                            <span className="text-xs font-semibold text-olive-700 bg-olive-100/70 px-2.5 py-1 rounded-lg">
+                              Tavolo {assignedTable.number}
                             </span>
                           ) : (
                             <span className="text-xs text-olive-400 italic">—</span>
@@ -248,16 +248,16 @@ export default function ReservationsTable({
                         ) : assignedTable ? (
                           <button
                             onClick={() => setAssigningReservation(res)}
-                            className="bg-olive-100 hover:bg-olive-200 text-olive-900 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                            className="bg-olive-100 hover:bg-olive-200 text-olive-900 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm"
                           >
-                            <span>🪑</span> Tavolo {assignedTable.number} ({assignedTable.seats}p)
+                            Tavolo {assignedTable.number} ({assignedTable.seats}p)
                           </button>
                         ) : (
                           <button
                             onClick={() => setAssigningReservation(res)}
-                            className="border border-dashed border-terra-500 text-terra-600 hover:bg-terra-50 px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1"
+                            className="border border-dashed border-terra-500 text-terra-600 hover:bg-terra-50 px-3 py-1 rounded-xl text-xs font-bold transition-all"
                           >
-                            <span>+</span> Assegna Tavolo
+                            + Assegna Tavolo
                           </button>
                         )}
                       </td>
@@ -290,31 +290,29 @@ export default function ReservationsTable({
           {/* Mobile Cards View */}
           <div className="lg:hidden divide-y divide-olive-100">
             {sortedReservations.map((res) => {
-              const source = SOURCE_CONFIG[res.source] || SOURCE_CONFIG.website;
               const assignedTable =
                 res.table || tables.find((t) => t.id === res.table_id);
-              const isCompleted = res.status === "completed";
+              const isCompleted = res.status === "completed" || res.status === "confirmed";
 
               return (
                 <div
                   key={res.id}
                   className={`p-5 space-y-3 ${
-                    isCompleted ? "bg-green-50/40" : ""
+                    isCompleted ? "bg-green-50/30" : ""
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="font-bold text-olive-900 flex items-center gap-2">
-                        <span>{source.icon}</span>
                         {res.name}
-                        {isCompleted && (
+                        {res.status === "completed" && (
                           <span className="text-[10px] bg-green-200 text-green-900 font-bold px-2 py-0.5 rounded-full">
                             Servita
                           </span>
                         )}
                       </div>
                       <div className="text-xs text-olive-500 mt-0.5">
-                        👥 {res.guests} persone · {res.time} (
+                        {res.guests} persone · {res.time} (
                         {new Date(res.date).toLocaleDateString("it-IT", {
                           day: "numeric",
                           month: "short",
@@ -334,7 +332,7 @@ export default function ReservationsTable({
                       href={`tel:${res.phone}`}
                       className="text-terra-600 font-mono font-semibold"
                     >
-                      📞 {res.phone}
+                      {res.phone}
                     </a>
 
                     {!isCompleted &&
@@ -343,7 +341,7 @@ export default function ReservationsTable({
                           onClick={() => setAssigningReservation(res)}
                           className="bg-olive-100 px-2.5 py-1 rounded-lg text-olive-900 font-bold"
                         >
-                          🪑 Tavolo {assignedTable.number} ({assignedTable.seats}p)
+                          Tavolo {assignedTable.number} ({assignedTable.seats}p)
                         </button>
                       ) : (
                         <button
