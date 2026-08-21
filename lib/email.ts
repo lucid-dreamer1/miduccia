@@ -1,17 +1,7 @@
 "use server";
 
+import nodemailer from "nodemailer";
 import { Resend } from "resend";
-
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  return new Resend(key);
-}
-
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-const OWNER_EMAIL = process.env.OWNER_EMAIL || "";
-const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
 
 interface BookingEmailData {
   name: string;
@@ -21,6 +11,81 @@ interface BookingEmailData {
   date: string;
   time: string;
   notes: string | null;
+}
+
+const GMAIL_USER = process.env.GMAIL_USER || "";
+const GMAIL_PASS = process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || "";
+const RESEND_KEY = process.env.RESEND_API_KEY || "";
+const RESEND_FROM = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+const OWNER_EMAIL = process.env.OWNER_EMAIL || GMAIL_USER || "";
+const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
+
+// Lazy Nodemailer transport
+function getGmailTransport() {
+  if (!GMAIL_USER || !GMAIL_PASS) return null;
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: GMAIL_USER,
+      pass: GMAIL_PASS.replace(/\s+/g, ""), // strip spaces if copied from Google
+    },
+  });
+}
+
+// Lazy Resend client
+function getResendClient(): Resend | null {
+  if (!RESEND_KEY) return null;
+  return new Resend(RESEND_KEY);
+}
+
+// Universal email sender helper
+async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<{ success: boolean; error?: string }> {
+  // 1. Try Gmail SMTP first if configured (no domain required)
+  const transporter = getGmailTransport();
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"Osteria da Miduccia" <${GMAIL_USER}>`,
+        to,
+        subject,
+        html,
+      });
+      return { success: true };
+    } catch (err) {
+      console.error("Gmail SMTP send error:", err);
+      return { success: false, error: String(err) };
+    }
+  }
+
+  // 2. Fallback to Resend if configured
+  const resend = getResendClient();
+  if (resend) {
+    try {
+      await resend.emails.send({
+        from: RESEND_FROM,
+        to,
+        subject,
+        html,
+      });
+      return { success: true };
+    } catch (err) {
+      console.error("Resend API send error:", err);
+      return { success: false, error: String(err) };
+    }
+  }
+
+  // 3. Mock mode
+  console.log(`[MOCK EMAIL] To: ${to} | Subject: ${subject}`);
+  return { success: true };
 }
 
 function formatDate(dateStr: string): string {
@@ -79,8 +144,9 @@ export async function sendOwnerBookingNotification(
   data: BookingEmailData,
   responseToken: string
 ) {
-  if (!OWNER_EMAIL || !process.env.RESEND_API_KEY) {
-    console.log("[MOCK] Email inviata al titolare:", data.name, "token:", responseToken);
+  const recipient = OWNER_EMAIL || GMAIL_USER;
+  if (!recipient) {
+    console.log("[MOCK] Nessuna email proprietario configurata.");
     return { success: true };
   }
 
@@ -88,44 +154,37 @@ export async function sendOwnerBookingNotification(
   const rejectUrl = `${BASE_URL}/api/booking-respond/${responseToken}?action=reject`;
   const inboxUrl = `${BASE_URL}/admin/inbox`;
 
-  try {
-    await getResend()!.emails.send({
-      from: FROM_EMAIL,
-      to: OWNER_EMAIL,
-      subject: `Nuova richiesta prenotazione: ${data.name} (${data.guests} persone - ${formatDate(data.date)} ore ${data.time})`,
-      html: emailWrapper(`
-        <h2 style="color:#3a3222;font-family:Georgia,serif;font-size:22px;margin:0 0 8px;">Nuova Richiesta di Prenotazione</h2>
-        <p style="color:#5f5232;font-size:14px;margin:0 0 16px;line-height:1.5;">Hai ricevuto una nuova richiesta. Puoi confermarla o rifiutarla subito con i pulsanti rapidi, oppure aprirla nel portale di gestione.</p>
-        
-        ${bookingDetailsHtml(data)}
-        
-        <!-- Action Buttons -->
-        <div style="text-align:center;margin:32px 0 20px;">
-          <div style="margin-bottom:14px;">
-            <a href="${confirmUrl}" style="display:inline-block;background:#15803d;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;margin:4px 6px;letter-spacing:0.3px;">
-              Accetta Prenotazione
-            </a>
-            <a href="${rejectUrl}" style="display:inline-block;background:#b91c1c;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;margin:4px 6px;letter-spacing:0.3px;">
-              Rifiuta
-            </a>
-          </div>
-          <div>
-            <a href="${inboxUrl}" style="display:inline-block;background:#3a3222;color:#faf3e0;padding:12px 26px;border-radius:10px;text-decoration:none;font-weight:500;font-size:13px;margin:4px 6px;border:1px solid #5f5232;">
-              Apri nel Portale Inbox
-            </a>
-          </div>
+  return sendEmail({
+    to: recipient,
+    subject: `Nuova richiesta prenotazione: ${data.name} (${data.guests} persone - ${formatDate(data.date)} ore ${data.time})`,
+    html: emailWrapper(`
+      <h2 style="color:#3a3222;font-family:Georgia,serif;font-size:22px;margin:0 0 8px;">Nuova Richiesta di Prenotazione</h2>
+      <p style="color:#5f5232;font-size:14px;margin:0 0 16px;line-height:1.5;">Hai ricevuto una nuova richiesta. Puoi confermarla o rifiutarla subito con i pulsanti rapidi, oppure aprirla nel portale di gestione.</p>
+      
+      ${bookingDetailsHtml(data)}
+      
+      <!-- Action Buttons -->
+      <div style="text-align:center;margin:32px 0 20px;">
+        <div style="margin-bottom:14px;">
+          <a href="${confirmUrl}" style="display:inline-block;background:#15803d;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;margin:4px 6px;letter-spacing:0.3px;">
+            Accetta Prenotazione
+          </a>
+          <a href="${rejectUrl}" style="display:inline-block;background:#b91c1c;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;margin:4px 6px;letter-spacing:0.3px;">
+            Rifiuta
+          </a>
         </div>
+        <div>
+          <a href="${inboxUrl}" style="display:inline-block;background:#3a3222;color:#faf3e0;padding:12px 26px;border-radius:10px;text-decoration:none;font-weight:500;font-size:13px;margin:4px 6px;border:1px solid #5f5232;">
+            Apri nel Portale Inbox
+          </a>
+        </div>
+      </div>
 
-        <p style="color:#ae9f62;font-size:12px;text-align:center;margin:18px 0 0;">
-          Tutte le prenotazioni sono consultabili anche dal <a href="${BASE_URL}/admin/dashboard" style="color:#d46a2a;text-decoration:underline;">Pannello dell'Oste</a>.
-        </p>
-      `),
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("Email send error (owner booking notification):", err);
-    return { success: false, error: String(err) };
-  }
+      <p style="color:#ae9f62;font-size:12px;text-align:center;margin:18px 0 0;">
+        Tutte le prenotazioni sono consultabili anche dal <a href="${BASE_URL}/admin/dashboard" style="color:#d46a2a;text-decoration:underline;">Pannello dell'Oste</a>.
+      </p>
+    `),
+  });
 }
 
 // Backward compatibility aliases
@@ -144,68 +203,44 @@ export async function sendOwnerDirectEmail(
 // SHARED: Send confirmation email to the customer
 // ═══════════════════════════════════════════════════════
 export async function sendCustomerConfirmation(data: BookingEmailData) {
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[MOCK] Email di conferma inviata al cliente:", data.email);
-    return { success: true };
-  }
-
-  try {
-    await getResend()!.emails.send({
-      from: FROM_EMAIL,
-      to: data.email,
-      subject: `Prenotazione Confermata — Osteria da Miduccia`,
-      html: emailWrapper(`
-        <h2 style="color:#15803d;font-family:Georgia,serif;font-size:24px;margin:0 0 8px;">Prenotazione Confermata</h2>
-        <p style="color:#3a3222;font-size:15px;margin:0 0 20px;line-height:1.5;">
-          Gentile <strong>${data.name}</strong>, la tua prenotazione presso l'Osteria da Miduccia è stata confermata.
-        </p>
-        ${bookingDetailsHtml(data)}
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;text-align:center;margin:20px 0;">
-          <p style="color:#166534;font-size:14px;margin:0;font-weight:600;">Ti aspettiamo ${formatDate(data.date)} alle ore ${data.time}.</p>
-        </div>
-        <p style="color:#5f5232;font-size:13px;margin:16px 0 0;">
-          Per qualsiasi necessità di modifica o cancellazione, ti invitiamo a contattarci telefonicamente al <a href="tel:+390823456789" style="color:#d46a2a;font-weight:600;">+39 0823 456 789</a>.
-        </p>
-      `),
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("Email send error (customer confirm):", err);
-    return { success: false, error: String(err) };
-  }
+  return sendEmail({
+    to: data.email,
+    subject: `Prenotazione Confermata — Osteria da Miduccia`,
+    html: emailWrapper(`
+      <h2 style="color:#15803d;font-family:Georgia,serif;font-size:24px;margin:0 0 8px;">Prenotazione Confermata</h2>
+      <p style="color:#3a3222;font-size:15px;margin:0 0 20px;line-height:1.5;">
+        Gentile <strong>${data.name}</strong>, la tua prenotazione presso l'Osteria da Miduccia è stata confermata.
+      </p>
+      ${bookingDetailsHtml(data)}
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;text-align:center;margin:20px 0;">
+        <p style="color:#166534;font-size:14px;margin:0;font-weight:600;">Ti aspettiamo ${formatDate(data.date)} alle ore ${data.time}.</p>
+      </div>
+      <p style="color:#5f5232;font-size:13px;margin:16px 0 0;">
+        Per qualsiasi necessità di modifica o cancellazione, ti invitiamo a contattarci telefonicamente al <a href="tel:+390823456789" style="color:#d46a2a;font-weight:600;">+39 0823 456 789</a>.
+      </p>
+    `),
+  });
 }
 
 // ═══════════════════════════════════════════════════════
 // SHARED: Send rejection email to the customer
 // ═══════════════════════════════════════════════════════
 export async function sendCustomerRejection(data: BookingEmailData) {
-  if (!process.env.RESEND_API_KEY) {
-    console.log("[MOCK] Email di rifiuto inviata al cliente:", data.email);
-    return { success: true };
-  }
-
-  try {
-    await getResend()!.emails.send({
-      from: FROM_EMAIL,
-      to: data.email,
-      subject: `Aggiornamento Prenotazione — Osteria da Miduccia`,
-      html: emailWrapper(`
-        <h2 style="color:#991b1b;font-family:Georgia,serif;font-size:24px;margin:0 0 8px;">Disponibilità Esaurita</h2>
-        <p style="color:#3a3222;font-size:15px;margin:0 0 20px;line-height:1.5;">
-          Gentile <strong>${data.name}</strong>, siamo spiacenti di informarti che per la data e l'orario richiesti non abbiamo tavoli disponibili.
-        </p>
-        ${bookingDetailsHtml(data)}
-        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px;text-align:center;margin:20px 0;">
-          <p style="color:#991b1b;font-size:14px;margin:0;font-weight:500;">Ti invitiamo a selezionare un'altra data o fascia oraria.</p>
-        </div>
-        <p style="color:#5f5232;font-size:13px;margin:16px 0 0;">
-          Puoi effettuare una nuova richiesta sul <a href="${BASE_URL}/#prenota" style="color:#d46a2a;font-weight:600;">nostro sito web</a> oppure contattarci telefonicamente al <a href="tel:+390823456789" style="color:#d46a2a;font-weight:600;">+39 0823 456 789</a>.
-        </p>
-      `),
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("Email send error (customer reject):", err);
-    return { success: false, error: String(err) };
-  }
+  return sendEmail({
+    to: data.email,
+    subject: `Aggiornamento Prenotazione — Osteria da Miduccia`,
+    html: emailWrapper(`
+      <h2 style="color:#991b1b;font-family:Georgia,serif;font-size:24px;margin:0 0 8px;">Disponibilità Esaurita</h2>
+      <p style="color:#3a3222;font-size:15px;margin:0 0 20px;line-height:1.5;">
+        Gentile <strong>${data.name}</strong>, siamo spiacenti di informarti che per la data e l'orario richiesti non abbiamo tavoli disponibili.
+      </p>
+      ${bookingDetailsHtml(data)}
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:16px;text-align:center;margin:20px 0;">
+        <p style="color:#991b1b;font-size:14px;margin:0;font-weight:500;">Ti invitiamo a selezionare un'altra data o fascia oraria.</p>
+      </div>
+      <p style="color:#5f5232;font-size:13px;margin:16px 0 0;">
+        Puoi effettuare una nuova richiesta sul <a href="${BASE_URL}/#prenota" style="color:#d46a2a;font-weight:600;">nostro sito web</a> oppure contattarci telefonicamente al <a href="tel:+390823456789" style="color:#d46a2a;font-weight:600;">+39 0823 456 789</a>.
+      </p>
+    `),
+  });
 }
